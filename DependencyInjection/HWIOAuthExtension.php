@@ -140,6 +140,16 @@ class HWIOAuthExtension extends Extension
         if (isset($config['connect'])) {
             $container->setParameter('hwi_oauth.connect', true);
 
+            foreach ($config['connect'] as $key => $serviceId) {
+                if ('confirmation' === $key) {
+                    $container->setParameter('hwi_oauth.connect.confirmation', $config['connect']['confirmation']);
+
+                    continue;
+                }
+
+                $container->setAlias('hwi_oauth.'.str_replace('_', '.', $key), $serviceId);
+            }
+
             if (isset($config['fosub'])) {
                 $container->setParameter('hwi_oauth.fosub_enabled', true);
 
@@ -166,19 +176,9 @@ class HWIOAuthExtension extends Extension
             } else {
                 $container->setParameter('hwi_oauth.fosub_enabled', false);
 
-                if (!$container->hasDefinition('hwi_oauth.registration.form')) {
+                if (!$container->hasDefinition('hwi_oauth.registration.form') && !$container->hasAlias('hwi_oauth.registration.form')) {
                     throw new RuntimeException('You must create service "hwi_oauth.registration.form" to be able to use "connect" functionality.');
                 }
-            }
-
-            foreach ($config['connect'] as $key => $serviceId) {
-                if ('confirmation' === $key) {
-                    $container->setParameter('hwi_oauth.connect.confirmation', $config['connect']['confirmation']);
-
-                    continue;
-                }
-
-                $container->setAlias('hwi_oauth.'.str_replace('_', '.', $key), $serviceId);
             }
         } else {
             $container->setParameter('hwi_oauth.fosub_enabled', false);
